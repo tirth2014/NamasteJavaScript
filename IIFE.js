@@ -24,8 +24,8 @@ riddhiGreeter.sayHi = function(){
     console.log(greeting +' '+riddhiGreeter.name);
 }
 
-tirthGreeter.sayHello(); // Hello Tirth
-riddhiGreeter.sayHi(); // Hello Riddhi
+tirthGreeter.sayHello(); // Hi Tirth
+riddhiGreeter.sayHi(); // Hi Riddhi
 
 
 // Solution
