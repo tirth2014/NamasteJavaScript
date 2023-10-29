@@ -113,8 +113,8 @@ setCount(2);
 console.log(count()); // 2
 
 
-// does the same thing, just introduced React module
-const React = (function () {
+// does the same thing, just introduced MyReact module
+const MyReact = (function () {
   function useState(initVal) {
     let _val = initVal;
     const state = () => _val;
@@ -127,7 +127,7 @@ const React = (function () {
   return { useState };
 })();
 
-const [count, setCount] = React.useState(1);
+const [count, setCount] = MyReact.useState(1);
 
 console.log(count()); // 1
 setCount(2);
@@ -137,7 +137,7 @@ console.log(count()); // 2
 
 // Let's also introduce Component and render:
 
-const React = (function () {
+const MyReact = (function () {
   let _val;
   function useState(initVal) {
     const state = _val || initVal;
@@ -148,7 +148,7 @@ const React = (function () {
     return [state, setState];
   }
 
-  // teach react what's render
+  // teach MyReact what's render
   function render(Component) {
     const C = Component();
     C.render();
@@ -159,17 +159,103 @@ const React = (function () {
 })();
 
 function Component() {
-  const [count, setCount] = React.useState(1);
+  const [count, setCount] = MyReact.useState(1);
   return {
     render: () => console.log(count),
     click: () => setCount(count + 1)
   };
 }
 
-var App = React.render(Component); // 1
+var App = MyReact.render(Component); // 1
 App.click();
-var App = React.render(Component); // 2
+var App = MyReact.render(Component); // 2
 App.click();
-var App = React.render(Component); // 3
+var App = MyReact.render(Component); // 3
 App.click();
-var App = React.render(Component); // 4
+var App = MyReact.render(Component); // 4
+
+
+// let's use another state fruit also with useState hook
+
+const MyReact = (function () {
+  let _val;
+  function useState(initVal) {
+    const state = _val || initVal;
+    const setState = (newVal) => {
+      _val = newVal;
+    };
+
+    return [state, setState];
+  }
+
+  // teach MyReact what's render
+  function render(Component) {
+    const C = Component();
+    C.render();
+    return C;
+  }
+
+  return { useState, render };
+})();
+
+function Component() {
+  const [count, setCount] = MyReact.useState(1);
+  const [fruit, setFruit] = MyReact.useState("apple");
+  return {
+    render: () => console.log({ count, fruit }),
+    click: () => setCount(count + 1),
+    type: (word) => setFruit(word)
+  };
+}
+
+var App = MyReact.render(Component); // {count: 1, fruit: "apple"}
+App.click();
+var App = MyReact.render(Component); // {count: 2, fruit: 2}
+App.type("mango");
+var App = MyReact.render(Component); // {count: "mango", fruit: "mango"}
+
+
+// What's wrong here?
+// The issue in code is that we are using the same _val variable for both count and fruit state variables. 
+// As a result, when we call setFruit(word), it updates _val to the new word value, and this change affects both count and fruit state variables.
+
+
+const MyReact = (function () {
+  let states = [];
+  let idx = 0;
+  function useState(initVal) {
+    const state = states[idx] || initVal;
+    const _idx = idx;
+    const setState = (newVal) => {
+      states[_idx] = newVal;
+    };
+    idx++;
+    return [state, setState];
+  }
+
+  // teach react what's render
+  function render(Component) {
+    idx = 0;
+    const C = Component();
+    C.render();
+    return C;
+  }
+
+  return { useState, render };
+})();
+
+function Component() {
+  const [count, setCount] = MyReact.useState(1);
+  const [fruit, setFruit] = MyReact.useState("apple");
+  return {
+    render: () => console.log({ count, fruit }),
+    click: () => setCount(count + 1),
+    type: (word) => setFruit(word)
+  };
+}
+
+var App = MyReact.render(Component); // {count: 1, fruit: "apple"}
+App.click();
+var App = MyReact.render(Component); // {count: 2, fruit: "apple"}
+App.type("mango");
+var App = MyReact.render(Component); // {count: 2, fruit: "mango"}
